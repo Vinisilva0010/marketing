@@ -1,102 +1,312 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, 
+  BarChart3, 
+  Users, 
+  TrendingUp, 
+  Calendar,
+  Sparkles,
+  Download,
+  Settings
+} from 'lucide-react';
+import AISuggestions from '@/components/ai/AISuggestions';
+import ExportCalendar from '@/components/export/ExportCalendar';
+import FutureIntegrations from '@/components/integrations/FutureIntegrations';
+import { storage } from '@/lib/storage';
+import { Post } from '@/types';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [posts, setPosts] = useState<Post[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Load posts on component mount
+  useEffect(() => {
+    const loadPosts = () => {
+      const storedPosts = storage.getPosts();
+      setPosts(storedPosts);
+    };
+
+    loadPosts();
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      loadPosts();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Calculate stats
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const postsThisMonth = posts.filter(post => {
+    const postDate = new Date(post.date);
+    return postDate.getMonth() === currentMonth && postDate.getFullYear() === currentYear;
+  }).length;
+
+  const publishedPosts = posts.filter(p => p.status === 'published').length;
+  const scheduledPosts = posts.filter(p => p.status === 'scheduled').length;
+  const activeSocialNetworks = new Set(posts.map(p => p.socialNetwork)).size;
+
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'ai', label: 'IA Sugestões', icon: Sparkles },
+    { id: 'export', label: 'Exportar', icon: Download },
+    { id: 'integrations', label: 'Integrações', icon: Settings }
+  ];
+
+  const handleCreatePost = () => {
+    // For now, we'll show a simple form
+    const title = prompt('Título do post:');
+    if (!title) return;
+
+    const socialNetwork = prompt('Rede social (instagram, linkedin, tiktok, facebook, twitter, youtube, pinterest):') || 'instagram';
+    const date = prompt('Data (YYYY-MM-DD):') || new Date().toISOString().split('T')[0];
+
+    const newPost: Post = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title,
+      socialNetwork: socialNetwork as any,
+      objective: 'engagement',
+      date: `${date}T09:00:00.000Z`,
+      time: '09:00',
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    storage.addPost(newPost);
+    setPosts(storage.getPosts());
+    alert('Post criado com sucesso!');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white">
+      {/* Header */}
+      <header className="bg-slate-800/80 backdrop-blur border-b border-slate-700">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                ConteúdoMestre
+              </h1>
+              <p className="text-xs text-slate-400">Planejamento de Redes Sociais</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={handleCreatePost}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors flex items-center space-x-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <Plus className="w-4 h-4" />
+            <span>Novo Post</span>
+          </button>
         </div>
+      </header>
+
+      {/* Navigation Tabs */}
+      <nav className="bg-slate-800/50 border-b border-slate-700">
+        <div className="container mx-auto px-4">
+          <div className="flex space-x-8 overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-slate-400 hover:text-slate-300'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8">
+            {/* Header Section */}
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
+              <p className="text-slate-400">Gerencie seu calendário de conteúdo para redes sociais</p>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-lg bg-blue-500/20 text-blue-400">
+                    <BarChart3 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">Posts este mês</p>
+                    <p className="text-2xl font-bold">{postsThisMonth}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-lg bg-green-500/20 text-green-400">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">Publicados</p>
+                    <p className="text-2xl font-bold">{publishedPosts}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-lg bg-yellow-500/20 text-yellow-400">
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">Agendados</p>
+                    <p className="text-2xl font-bold">{scheduledPosts}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-lg bg-purple-500/20 text-purple-400">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400">Redes ativas</p>
+                    <p className="text-2xl font-bold">{activeSocialNetworks}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Welcome Card */}
+            <div className="bg-slate-800/50 backdrop-blur border border-slate-700 border-l-4 border-l-blue-500 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Bem-vindo ao ConteúdoMestre! 🚀</h3>
+              <p className="text-slate-400 mb-4">
+                {posts.length === 0 
+                  ? "Comece criando seu primeiro post para começar a planejar seu conteúdo para redes sociais."
+                  : `Você já tem ${posts.length} posts criados! Continue organizando seu calendário de conteúdo.`
+                }
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-slate-400">
+                <p>✨ <strong>Sugestões de IA:</strong> Use a aba "IA Sugestões" para ideias criativas</p>
+                <p>📄 <strong>Exportação:</strong> Gere PDFs do seu calendário na aba "Exportar"</p>
+                <p>🔮 <strong>Futuro:</strong> Confira as integrações planejadas na aba "Integrações"</p>
+              </div>
+            </div>
+
+            {/* Posts List */}
+            {posts.length > 0 && (
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Posts Recentes</h3>
+                <div className="space-y-3">
+                  {posts.slice(-5).reverse().map((post) => (
+                    <div key={post.id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{post.title}</h4>
+                        <p className="text-sm text-slate-400">
+                          {post.socialNetwork} • {new Date(post.date).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        post.status === 'published' 
+                          ? 'bg-green-500/20 text-green-400'
+                          : post.status === 'scheduled'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-slate-500/20 text-slate-400'
+                      }`}>
+                        {post.status === 'published' ? 'Publicado' : post.status === 'scheduled' ? 'Agendado' : 'Rascunho'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {posts.length === 0 && (
+              <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-12 text-center">
+                <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-300 mb-2">Nenhum post criado ainda</h3>
+                <p className="text-slate-400 mb-6">
+                  Comece criando seu primeiro post para organizar seu calendário de conteúdo.
+                </p>
+                <button
+                  onClick={handleCreatePost}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Criar Primeiro Post
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Suggestions Tab */}
+        {activeTab === 'ai' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Sugestões de IA</h2>
+              <p className="text-slate-400">Gere ideias criativas, CTAs e hashtags personalizadas</p>
+            </div>
+            <AISuggestions />
+          </div>
+        )}
+
+        {/* Export Tab */}
+        {activeTab === 'export' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Exportar Calendário</h2>
+              <p className="text-slate-400">Gere PDFs e imagens do seu calendário de conteúdo</p>
+            </div>
+            <ExportCalendar />
+          </div>
+        )}
+
+        {/* Integrations Tab */}
+        {activeTab === 'integrations' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Integrações</h2>
+              <p className="text-slate-400">Conecte o ConteúdoMestre com suas ferramentas favoritas</p>
+            </div>
+            <FutureIntegrations />
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-slate-800/50 border-t border-slate-700 py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-semibold">ConteúdoMestre</span>
+          </div>
+          <p className="text-slate-400 text-sm">
+            Transformando o planejamento de conteúdo para redes sociais • v1.0.0
+          </p>
+        </div>
       </footer>
     </div>
   );

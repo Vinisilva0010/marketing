@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { Post, CalendarEvent } from '@/types';
+import { Post, CalendarEvent, SocialNetwork } from '@/types';
 import { storage } from '@/lib/storage';
 import { SOCIAL_NETWORKS } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
@@ -14,18 +14,20 @@ import { cn } from '@/lib/utils';
 interface CalendarProps {
   onDateSelect?: (date: string) => void;
   onEventClick?: (post: Post) => void;
+  onAddPost?: () => void;
   className?: string;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
   onDateSelect,
   onEventClick,
+  onAddPost,
   className
 }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
 
-  // Load posts from localStorage
+  // Load posts from localStorage and react to changes
   useEffect(() => {
     const loadPosts = () => {
       const storedPosts = storage.getPosts();
@@ -34,13 +36,13 @@ const Calendar: React.FC<CalendarProps> = ({
 
     loadPosts();
 
-    // Listen for localStorage changes
-    const handleStorageChange = () => {
+    const handleStorageChange = (event?: Event) => {
+      // Optional: only react to posts key, but for simplicity reload all
       loadPosts();
     };
 
-    window.addEventListener('localStorage', handleStorageChange);
-    return () => window.removeEventListener('localStorage', handleStorageChange);
+    window.addEventListener('localStorage', handleStorageChange as EventListener);
+    return () => window.removeEventListener('localStorage', handleStorageChange as EventListener);
   }, []);
 
   // Convert posts to calendar events
@@ -74,6 +76,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const handleDateClick = (info: { dateStr: string }) => {
     const clickedDate = info.dateStr;
     onDateSelect?.(clickedDate);
+    onAddPost?.();
   };
 
   const handleEventClick = (info: { event: { id: string } }) => {

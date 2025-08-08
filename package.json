@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "ANALYZE=true npm run build",
+    "preview": "npm run build && npm run start",
+    "clean": "rm -rf .next out node_modules/.cache"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.18",

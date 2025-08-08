@@ -23,7 +23,6 @@ import { cn } from '@/lib/utils';
 
 interface PostFormProps {
   post?: Post;
-  isOpen: boolean;
   onClose: () => void;
   onSave?: (post: Post) => void;
   defaultDate?: string;
@@ -32,7 +31,6 @@ interface PostFormProps {
 
 const PostForm: React.FC<PostFormProps> = ({
   post,
-  isOpen,
   onClose,
   onSave,
   defaultDate,
@@ -155,8 +153,6 @@ const PostForm: React.FC<PostFormProps> = ({
       handleInputChange('hashtags', suggestions.hashtags);
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

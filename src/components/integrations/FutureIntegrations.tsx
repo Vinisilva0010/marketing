@@ -276,3 +276,4 @@ const FutureIntegrations: React.FC<FutureIntegrationsProps> = ({ className }) =>
 };
 
 export default FutureIntegrations;
+

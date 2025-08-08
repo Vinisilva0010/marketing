@@ -65,6 +65,10 @@ Uma aplicação web front-end moderna para planejamento de conteúdo para redes 
 - `npm run build` - Gera build de produção
 - `npm run start` - Executa em modo de produção
 - `npm run lint` - Executa verificação de código
+- `npm run lint:fix` - Corrige automaticamente problemas de lint
+- `npm run type-check` - Verifica tipos TypeScript
+- `npm run preview` - Build e executa em modo produção
+- `npm run clean` - Limpa arquivos de cache
 
 ## 📁 Estrutura do Projeto
 

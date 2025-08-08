@@ -350,3 +350,4 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
 };
 
 export default AISuggestions;
+

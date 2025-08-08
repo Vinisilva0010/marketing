@@ -86,3 +86,4 @@ export interface ExportOptions {
   includeDetails: boolean;
   orientation: 'portrait' | 'landscape';
 }
+

@@ -19,6 +19,12 @@ export const storage = {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(posts));
+      // Notify listeners about storage changes (for cross-component updates)
+      try {
+        window.dispatchEvent(new CustomEvent('localStorage', {
+          detail: { key: STORAGE_KEYS.POSTS, value: posts }
+        }));
+      } catch {}
     } catch (error) {
       console.error('Erro ao salvar posts:', error);
     }
@@ -82,6 +88,11 @@ export const storage = {
       const currentSettings = this.getSettings();
       const newSettings = { ...currentSettings, ...settings };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(newSettings));
+      try {
+        window.dispatchEvent(new CustomEvent('localStorage', {
+          detail: { key: STORAGE_KEYS.SETTINGS, value: newSettings }
+        }));
+      } catch {}
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
     }
@@ -103,6 +114,11 @@ export const storage = {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      try {
+        window.dispatchEvent(new CustomEvent('localStorage', {
+          detail: { key: STORAGE_KEYS.USER, value: user }
+        }));
+      } catch {}
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
     }
@@ -111,6 +127,11 @@ export const storage = {
   clearUser(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(STORAGE_KEYS.USER);
+    try {
+      window.dispatchEvent(new CustomEvent('localStorage', {
+        detail: { key: STORAGE_KEYS.USER, value: null }
+      }));
+    } catch {}
   },
 
   // Utility para limpar todos os dados
@@ -118,6 +139,11 @@ export const storage = {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
+      try {
+        window.dispatchEvent(new CustomEvent('localStorage', {
+          detail: { key, value: null }
+        }));
+      } catch {}
     });
   }
 };
@@ -153,3 +179,4 @@ export const useLocalStorage = <T>(key: string, defaultValue: T) => {
 
   return [getValue(), setValue] as const;
 };
+

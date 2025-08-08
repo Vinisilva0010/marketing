@@ -21,9 +21,14 @@ const Layout: React.FC<LayoutProps> = ({ children, className }) => {
     setSidebarOpen(false);
   };
 
+  const [requestAddPost, setRequestAddPost] = useState<null | { at: number }>(null);
+
   const handleAddPost = () => {
-    // TODO: Implement add post functionality
-    console.log('Add post clicked');
+    // Dispara um evento customizado para que a página atual abra o modal
+    try {
+      window.dispatchEvent(new CustomEvent('open-post-form'));
+    } catch {}
+    setRequestAddPost({ at: Date.now() });
   };
 
   return (
@@ -59,3 +64,4 @@ const Layout: React.FC<LayoutProps> = ({ children, className }) => {
 };
 
 export default Layout;
+

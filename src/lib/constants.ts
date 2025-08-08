@@ -113,3 +113,4 @@ export const AI_SUGGESTION_PROMPTS = {
   },
   hashtags: 'Sugira hashtags relevantes para:'
 };
+

@@ -15,7 +15,11 @@ export const metadata: Metadata = {
   authors: [{ name: "ConteúdoMestre" }],
   creator: "ConteúdoMestre",
   publisher: "ConteúdoMestre",
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#0F172A",
   colorScheme: "dark",
 };

@@ -10,7 +10,6 @@ import { SOCIAL_NETWORKS } from '@/lib/constants';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 
-
 interface CalendarProps {
   onDateSelect?: (date: string) => void;
   onEventClick?: (post: Post) => void;
@@ -27,7 +26,6 @@ const Calendar: React.FC<CalendarProps> = ({
   const [posts, setPosts] = useState<Post[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
 
-  // Load posts from localStorage and react to changes
   useEffect(() => {
     const loadPosts = () => {
       const storedPosts = storage.getPosts();
@@ -36,26 +34,24 @@ const Calendar: React.FC<CalendarProps> = ({
 
     loadPosts();
 
-    const handleStorageChange = (event?: Event) => {
-      // Optional: only react to posts key, but for simplicity reload all
+    const handleStorageChange = () => {
       loadPosts();
     };
 
-    window.addEventListener('localStorage', handleStorageChange as EventListener);
-    return () => window.removeEventListener('localStorage', handleStorageChange as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Convert posts to calendar events
   useEffect(() => {
     const events: CalendarEvent[] = posts.map(post => {
       const socialNetworkConfig = SOCIAL_NETWORKS[post.socialNetwork];
-      
+
       return {
         ...post,
         id: post.id,
         title: post.title,
         start: post.date,
-        backgroundColor: socialNetworkConfig.color + '80', // Add transparency
+        backgroundColor: socialNetworkConfig.color + '80',
         borderColor: socialNetworkConfig.color,
         textColor: '#ffffff',
         extendedProps: {
@@ -74,8 +70,7 @@ const Calendar: React.FC<CalendarProps> = ({
   }, [posts]);
 
   const handleDateClick = (info: { dateStr: string }) => {
-    const clickedDate = info.dateStr;
-    onDateSelect?.(clickedDate);
+    onDateSelect?.(info.dateStr);
     onAddPost?.();
   };
 
@@ -88,9 +83,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const renderEventContent = (eventInfo: { event: { title: string; extendedProps: Record<string, unknown> } }) => {
     const { extendedProps } = eventInfo.event;
-   const key = extendedProps.socialNetwork as keyof typeof SOCIAL_NETWORKS;
-   const socialNetwork = SOCIAL_NETWORKS[key];
-
+    const socialNetwork = SOCIAL_NETWORKS[extendedProps.socialNetwork as SocialNetwork];
 
     return (
       <div className="p-1 text-xs">
@@ -138,11 +131,8 @@ const Calendar: React.FC<CalendarProps> = ({
           fixedWeekCount={false}
           showNonCurrentDates={false}
           dayHeaderFormat={{ weekday: 'short' }}
-          titleFormat={{ 
-            year: 'numeric', 
-            month: 'long' 
-          }}
-          firstDay={0} // Sunday
+          titleFormat={{ year: 'numeric', month: 'long' }}
+          firstDay={0}
           weekNumbers={false}
           eventClassNames="cursor-pointer hover:opacity-80 transition-opacity"
           dayCellClassNames="hover:bg-accent/20 cursor-pointer transition-colors"
@@ -150,7 +140,7 @@ const Calendar: React.FC<CalendarProps> = ({
         />
       </div>
 
-      {/* Calendar Legend */}
+      {/* Legenda */}
       <div className="mt-4 border-t border-border/40 pt-4">
         <h4 className="text-sm font-medium mb-3">Redes Sociais</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -168,31 +158,23 @@ const Calendar: React.FC<CalendarProps> = ({
         </div>
       </div>
 
-      {/* Calendar Stats */}
+      {/* Estatísticas */}
       <div className="mt-4 grid grid-cols-3 gap-4 text-center">
         <div>
-          <div className="text-lg font-bold text-primary">
-            {posts.length}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Total Posts
-          </div>
+          <div className="text-lg font-bold text-primary">{posts.length}</div>
+          <div className="text-xs text-muted-foreground">Total Posts</div>
         </div>
         <div>
           <div className="text-lg font-bold text-green-500">
             {posts.filter(p => p.status === 'published').length}
           </div>
-          <div className="text-xs text-muted-foreground">
-            Publicados
-          </div>
+          <div className="text-xs text-muted-foreground">Publicados</div>
         </div>
         <div>
           <div className="text-lg font-bold text-yellow-500">
             {posts.filter(p => p.status === 'scheduled').length}
           </div>
-          <div className="text-xs text-muted-foreground">
-            Agendados
-          </div>
+          <div className="text-xs text-muted-foreground">Agendados</div>
         </div>
       </div>
     </Card>

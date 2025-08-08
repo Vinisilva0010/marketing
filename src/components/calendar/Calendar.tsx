@@ -88,7 +88,9 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const renderEventContent = (eventInfo: { event: { title: string; extendedProps: Record<string, unknown> } }) => {
     const { extendedProps } = eventInfo.event;
-    const socialNetwork = SOCIAL_NETWORKS[extendedProps.socialNetwork as SocialNetwork];
+   const key = extendedProps.socialNetwork as keyof typeof SOCIAL_NETWORKS;
+   const socialNetwork = SOCIAL_NETWORKS[key];
+
 
     return (
       <div className="p-1 text-xs">
